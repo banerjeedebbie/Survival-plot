@@ -1,0 +1,37 @@
+#Survival graph
+
+library(survival)
+library(ggfortify)
+library(ggplot2)
+library(dplyr)
+library(ranger)
+library(RColorBrewer2)
+#we will select the first 4 colors in the Set1 palette
+cols<-brewer.pal(n=4,name="Set1")
+
+setwd("/Volumes/Home01/banerjeed/Project_Super_Enhancer/Analysis/NB_TFs_data_minning")
+SOX_Dataset <- read.table("German_Dataset_Survival.txt", header=T)
+head(SOX_Dataset,10)
+# Kaplan Meier Survival Curve
+km <- with(SOX_Dataset, Surv(Time, Event))
+head(km,80)
+
+#Kaplan-Meier estimates of the probability of survival over time.
+#km_fit <- survfit(Surv(Time, Event) ~ Group, data=SOX_Dataset)
+#summary(km_fit, times = c(1,30,60,90*(1:10)))
+#plot(km_fit, xlab="Days", main = 'Kaplan Meyer Plot') #base graphics is always ready
+#plot = geom_line(km_fit)
+
+km_fit_group <- survfit(Surv(Time, Event) ~ Group, data=SOX_Dataset)
+summary(km_fit_group, times = c(1,30,60,90*(1:10)))
+col_t1<-cols[km_fit_group$T1]
+#plot(km_fit_group, xlab="Survival Time (Days)", ylab = "Probability of survival", main = 'Kaplan Meyer Plot_SOX11_SOX4_subgroups', col = cols, c("High-High", "High-Low", "Low-High", "Low-Low"))
+
+cox <- coxph(Surv(Time, Event) ~ Group, data=SOX_Dataset)
+cox_summary<-summary(cox)
+
+library(survminer)
+
+ggsurvplot(km_fit_group, data = SOX_Dataset, palette = c("#2c7bb6", "#66c2a5", "#e7298a", "#fdcdac"), legend.title = "Groups", legend = c(0.7,0.8), title = "Kaplan Meyer Plot_SOX11_SOX4_subgroups", font.title = c(19, "bold"), ylab = "Probability of survival", xlab = "Time (days)", legend.labs = c("High-High", "High-Low", "Low-High", "Low-Low"), font.legend = c(16), font.y = c(20, "bold"), font.x = c(20, "bold"), xlim = c(0,8000))
+         
+           
